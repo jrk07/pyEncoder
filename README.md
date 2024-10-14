@@ -11,7 +11,7 @@ Basic video encoder that leverages FFMPEG to encode the supplied video file.
 
 ### Environment Variables
 | Name | Description | Default | 
-| ----------- | ----------- | ----------- | ----------- |
+| ----------- | ----------- | ----------- |
 | CODEC | The name of the [video codec] you want to utilize | libx264 | 
 | FILE_SUFFIX | The suffix you want to apply to your output video file.  | codec name | 
 | QUALITY | Adjusts output video quality.  Either MAX, LOW, or left out to use default. | Default | 
