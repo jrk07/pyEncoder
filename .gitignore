@@ -3,3 +3,6 @@ venv/
 .venv
 
 .DS_store
+
+videos/processed/*
+videos/to_be_processed/*

@@ -1,0 +1,7 @@
+services:
+  ffmpeg:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    volumes:
+      - ./videos:/app/videos
