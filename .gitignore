@@ -1,0 +1,7 @@
+venv/
+.env
+.venv
+
+.DS_store
+
+media/
