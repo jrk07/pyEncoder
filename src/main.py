@@ -1,22 +1,13 @@
 from ffmpeg import FFmpeg, FFmpegError, FFmpegUnsupportedCodec, Progress
+from logging import info, error
 from os import getenv
 from pathlib import Path
-
-# Grab the path to the video we want to encode.
-path_from_env = getenv('VIDEO_TO_ENCODE') or exit("VIDEO_TO_ENCODE environment variable not set, exiting.")
-input_video_path = Path(path_from_env) 
 
 # Provide a codec, otherwise default to libx264.
 codec = getenv('CODEC') or "libx264"
 
 # Provide a file suffix, otherwise default to the codec name.
 filename_suffix = getenv('FILE_SUFFIX') or codec
-
-# Reuse the input vidoes path and append with the codec name to show it's the encoded file along
-# with the appropriate extension.
-
-# TODO custom output path
-output_video_path =  input_video_path.parent / (input_video_path.stem + "_" + filename_suffix + ".mp4")
 
 # Quality can be set if desired, else we default to 18 which is
 # a good balance of quality and filesize. 
@@ -27,37 +18,50 @@ crf_value = {
 }.get(quality, 18)
 
 def main():
-    try:
-        ffmpeg = (
-            FFmpeg()
-            .option("y")
-            .input(input_video_path)
-            .output(
-                output_video_path,
-                {"codec:v": {codec}},
-                crf={crf_value}, 
+    video_files = files_from_dir("videos/to_be_processed/")
+    for video_file in video_files:
+        original_file_path = Path(video_file)
+        output_video_path =  "videos/processed/" + original_file_path.stem + "_" + filename_suffix + ".mp4"
+        try:
+            info(f"encode {video_file} start")
+            ffmpeg = (
+                FFmpeg()
+                .option("y")
+                .input(video_file)
+                .output(
+                    output_video_path,
+                    {"codec:v": {codec}},
+                    crf={crf_value}, 
+                )
             )
-        )
 
-        @ffmpeg.on("progress")
-        def on_progress(progress: Progress):
-            print(progress)
+            @ffmpeg.on("progress")
+            def on_progress(progress: Progress):
+                print(progress)
 
-        @ffmpeg.on("completed")
-        def on_completed():
-            print(f"completed encoding file {output_video_path}")
+            @ffmpeg.on("completed")
+            def on_completed():
+                info(f"completed encoding file {video_file}")
 
-        ffmpeg.execute()
+            ffmpeg.execute()
 
-    except FFmpegUnsupportedCodec as exception:
-        print(
-            "Unsupported codec provided, please use a valid codec or remove codec flag to default to x264."
-        )
+        except FFmpegUnsupportedCodec as exception:
+            error(
+                "Unsupported codec provided, please use a valid codec or remove codec flag to default to x264."
+            )
 
-    except FFmpegError as exception:
-        print("Error running ffmpeg")
-        print("Exception:", exception.message)
-        print("Arguments used to execute ffmpeg:", exception.arguments)
+        except FFmpegError as exception:
+            error("Error running ffmpeg")
+            error("Exception:", exception.message)
+            error("Arguments used to execute ffmpeg:", exception.arguments)
+
+def files_from_dir(directory):
+    files = []
+    path = Path(directory)
+    for file in path.rglob("*"):
+        if file.is_file():
+            files.append(file)
+    return files
 
 if __name__ == "__main__":
     main()
