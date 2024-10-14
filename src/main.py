@@ -3,11 +3,8 @@ from os import getenv
 from pathlib import Path
 
 # Grab the path to the video we want to encode.
-input_video_path = Path(getenv('VIDEO_TO_ENCODE'))
-
-if not input_video_path:
-    print("VIDEO_TO_ENCODE environment variable not set, exiting.")
-    exit()
+path_from_env = getenv('VIDEO_TO_ENCODE') or exit("VIDEO_TO_ENCODE environment variable not set, exiting.")
+input_video_path = Path(path_from_env) 
 
 # Provide a codec, otherwise default to libx264.
 codec = getenv('CODEC') or "libx264"
